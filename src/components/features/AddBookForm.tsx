@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useActionState, useEffect } from "react";
+import { useFormStatus } from "react-dom";
 import { Plus, X, Loader2 } from "lucide-react";
 import { addBook } from "@/actions/books";
 
@@ -12,27 +13,27 @@ const genres = [
 const inputClass =
   "w-full border border-sage-200 dark:border-stone-600 rounded-xl px-3 py-2.5 text-sm text-coffee dark:text-stone-100 placeholder:text-coffee/40 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-sage/40 bg-white dark:bg-stone-800";
 
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="flex-1 bg-sage text-parchment rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-sage-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+    >
+      {pending && <Loader2 className="w-4 h-4 animate-spin" />}
+      {pending ? "Adding…" : "Add to Idea Pool"}
+    </button>
+  );
+}
+
 export function AddBookForm() {
   const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const [state, formAction] = useActionState(addBook, null);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    const formData = new FormData(e.currentTarget);
-    const form = e.currentTarget;
-
-    startTransition(async () => {
-      const result = await addBook(formData);
-      if (result?.error) {
-        setError(result.error);
-      } else {
-        form.reset();
-        setOpen(false);
-      }
-    });
-  }
+  useEffect(() => {
+    if (state?.success) setOpen(false);
+  }, [state]);
 
   if (!open) {
     return (
@@ -59,13 +60,13 @@ export function AddBookForm() {
         </button>
       </div>
 
-      {error && (
+      {state?.error && (
         <div className="mb-4 px-4 py-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-700 dark:text-red-400">
-          {error}
+          {state.error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form action={formAction} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-coffee dark:text-stone-200 mb-1.5" htmlFor="title">Title *</label>
@@ -106,14 +107,7 @@ export function AddBookForm() {
         </div>
 
         <div className="flex gap-3 pt-1">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="flex-1 bg-sage text-parchment rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-sage-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-          >
-            {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isPending ? "Adding…" : "Add to Idea Pool"}
-          </button>
+          <SubmitButton />
           <button
             type="button"
             onClick={() => setOpen(false)}

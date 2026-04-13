@@ -1,9 +1,24 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
+import { useFormStatus } from "react-dom";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
-import { updateProgress } from "@/actions/progress";
+import { updateProgressAction } from "@/actions/progress";
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="bg-sage text-parchment rounded-xl px-4 py-2 text-sm font-medium hover:bg-sage-700 transition-colors disabled:opacity-60 flex items-center gap-2"
+    >
+      {pending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+      {pending ? "Saving…" : "Update"}
+    </button>
+  );
+}
 
 interface ProgressUpdaterProps {
   bookId: string;
@@ -13,24 +28,14 @@ interface ProgressUpdaterProps {
 
 export function ProgressUpdater({ bookId, pageCount, currentPage }: ProgressUpdaterProps) {
   const [page, setPage] = useState(currentPage);
-  const [isPending, startTransition] = useTransition();
-  const [saved, setSaved] = useState(false);
 
   const isFinished = page >= pageCount;
   const percent = pageCount > 0 ? Math.round((page / pageCount) * 100) : 0;
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSaved(false);
-    startTransition(async () => {
-      await updateProgress(bookId, page);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    });
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form action={updateProgressAction} className="space-y-4">
+      <input type="hidden" name="bookId" value={bookId} />
+
       <div className="flex items-center justify-between">
         <label className="text-sm font-medium text-coffee dark:text-stone-200" htmlFor="page-slider">
           Your progress
@@ -57,6 +62,7 @@ export function ProgressUpdater({ bookId, pageCount, currentPage }: ProgressUpda
         <div className="flex items-center gap-2 flex-1">
           <input
             type="number"
+            name="page"
             min={0}
             max={pageCount}
             value={page}
@@ -67,15 +73,7 @@ export function ProgressUpdater({ bookId, pageCount, currentPage }: ProgressUpda
             of {pageCount} pages ({percent}%)
           </span>
         </div>
-
-        <button
-          type="submit"
-          disabled={isPending}
-          className="bg-sage text-parchment rounded-xl px-4 py-2 text-sm font-medium hover:bg-sage-700 transition-colors disabled:opacity-60 flex items-center gap-2"
-        >
-          {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-          {isPending ? "Saving…" : saved ? "Saved!" : "Update"}
-        </button>
+        <SubmitButton />
       </div>
     </form>
   );

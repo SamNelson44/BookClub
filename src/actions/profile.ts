@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-export async function updateProfile(formData: FormData) {
+export async function updateProfile(
+  prevState: { error?: string; success?: boolean } | null,
+  formData: FormData
+) {
   const supabase = await createClient();
   const {
     data: { user },

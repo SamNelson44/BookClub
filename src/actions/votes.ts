@@ -3,14 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-export async function toggleVote(bookId: string) {
+export async function toggleVoteAction(formData: FormData) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Not authenticated." };
+  if (!user) return;
 
-  // Check if vote already exists
+  const bookId = formData.get("bookId") as string;
+  if (!bookId) return;
+
   const { data: existing } = await supabase
     .from("votes")
     .select("id")
@@ -19,18 +21,10 @@ export async function toggleVote(bookId: string) {
     .maybeSingle();
 
   if (existing) {
-    const { error } = await supabase
-      .from("votes")
-      .delete()
-      .eq("id", existing.id);
-    if (error) return { error: error.message };
+    await supabase.from("votes").delete().eq("id", existing.id);
   } else {
-    const { error } = await supabase
-      .from("votes")
-      .insert({ user_id: user.id, book_id: bookId });
-    if (error) return { error: error.message };
+    await supabase.from("votes").insert({ user_id: user.id, book_id: bookId });
   }
 
   revalidatePath("/idea-pool");
-  return { success: true, voted: !existing };
 }

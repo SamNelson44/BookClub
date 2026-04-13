@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useActionState, useEffect } from "react";
+import { useFormStatus } from "react-dom";
 import { MessageCircle, Trash2, Loader2 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
-import { addComment, deleteComment } from "@/actions/comments";
+import { addCommentAction, deleteCommentAction } from "@/actions/comments";
 import { formatDate } from "@/lib/utils";
 import type { Comment, Profile } from "@/lib/types";
 
@@ -13,46 +14,28 @@ interface CommentThreadProps {
   currentUser: Profile;
 }
 
+function PostButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full bg-sage text-parchment rounded-xl px-3 py-1.5 text-xs font-medium hover:bg-sage-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+    >
+      {pending && <Loader2 className="w-3 h-3 animate-spin" />}
+      Post
+    </button>
+  );
+}
+
 export function CommentThread({ bookId, comments, currentUser }: CommentThreadProps) {
   const [expanded, setExpanded] = useState(false);
   const [content, setContent] = useState("");
-  const [isPending, startTransition] = useTransition();
-  const [localComments, setLocalComments] = useState<Comment[]>(comments);
-  const [error, setError] = useState<string | null>(null);
+  const [state, formAction] = useActionState(addCommentAction, null);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!content.trim()) return;
-    setError(null);
-
-    const optimistic: Comment = {
-      id: `optimistic-${Date.now()}`,
-      user_id: currentUser.id,
-      book_id: bookId,
-      content: content.trim(),
-      created_at: new Date().toISOString(),
-      profile: { name: currentUser.name, avatar_url: currentUser.avatar_url },
-    };
-
-    setLocalComments((prev) => [...prev, optimistic]);
-    const submittedContent = content;
-    setContent("");
-
-    startTransition(async () => {
-      const result = await addComment(bookId, submittedContent);
-      if (result?.error) {
-        setError(result.error);
-        setLocalComments((prev) => prev.filter((c) => c.id !== optimistic.id));
-      }
-    });
-  }
-
-  function handleDelete(commentId: string) {
-    setLocalComments((prev) => prev.filter((c) => c.id !== commentId));
-    startTransition(async () => {
-      await deleteComment(commentId);
-    });
-  }
+  useEffect(() => {
+    if (state?.success) setContent("");
+  }, [state]);
 
   return (
     <div>
@@ -62,20 +45,20 @@ export function CommentThread({ bookId, comments, currentUser }: CommentThreadPr
         aria-expanded={expanded}
       >
         <MessageCircle className="w-3.5 h-3.5" />
-        {localComments.length === 0
+        {comments.length === 0
           ? "Add comment"
-          : `${localComments.length} comment${localComments.length !== 1 ? "s" : ""}`}
+          : `${comments.length} comment${comments.length !== 1 ? "s" : ""}`}
       </button>
 
       {expanded && (
         <div className="mt-3 space-y-3 animate-fade-in">
-          {localComments.length === 0 && (
+          {comments.length === 0 && (
             <p className="text-xs text-coffee/40 dark:text-stone-500 italic">
               Be the first to comment…
             </p>
           )}
 
-          {localComments.map((comment) => (
+          {comments.map((comment) => (
             <div key={comment.id} className="flex gap-2.5 group">
               <Avatar
                 name={comment.profile?.name ?? "?"}
@@ -96,21 +79,28 @@ export function CommentThread({ bookId, comments, currentUser }: CommentThreadPr
                 </p>
               </div>
               {(comment.user_id === currentUser.id || currentUser.role === "host") && (
-                <button
-                  onClick={() => handleDelete(comment.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-coffee/30 dark:text-stone-600 hover:text-red-400 flex-shrink-0"
-                  aria-label="Delete comment"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                <form action={deleteCommentAction} className="flex-shrink-0">
+                  <input type="hidden" name="commentId" value={comment.id} />
+                  <button
+                    type="submit"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-coffee/30 dark:text-stone-600 hover:text-red-400"
+                    aria-label="Delete comment"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </form>
               )}
             </div>
           ))}
 
-          {error && <p className="text-xs text-red-500 dark:text-red-400">{error}</p>}
+          {state?.error && (
+            <p className="text-xs text-red-500 dark:text-red-400">{state.error}</p>
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-2 pt-1">
+          <form action={formAction} className="space-y-2 pt-1">
+            <input type="hidden" name="bookId" value={bookId} />
             <textarea
+              name="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Say something…"
@@ -118,14 +108,7 @@ export function CommentThread({ bookId, comments, currentUser }: CommentThreadPr
               rows={2}
               className="w-full text-sm border border-sage-200 dark:border-stone-600 rounded-xl px-3 py-2 text-coffee dark:text-stone-100 placeholder:text-coffee/40 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-sage/40 bg-white dark:bg-stone-800 resize-none"
             />
-            <button
-              type="submit"
-              disabled={isPending || !content.trim()}
-              className="w-full bg-sage text-parchment rounded-xl px-3 py-1.5 text-xs font-medium hover:bg-sage-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
-            >
-              {isPending && <Loader2 className="w-3 h-3 animate-spin" />}
-              Post
-            </button>
+            <PostButton />
           </form>
         </div>
       )}

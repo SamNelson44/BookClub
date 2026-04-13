@@ -3,22 +3,27 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-export async function addComment(bookId: string, content: string) {
+export async function addCommentAction(
+  prevState: { error?: string; success?: boolean } | null,
+  formData: FormData
+) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated." };
 
-  const trimmed = content.trim();
-  if (!trimmed || trimmed.length > 500) {
+  const bookId = formData.get("bookId") as string;
+  const content = (formData.get("content") as string)?.trim();
+
+  if (!content || content.length > 500) {
     return { error: "Comment must be between 1 and 500 characters." };
   }
 
   const { error } = await supabase.from("comments").insert({
     user_id: user.id,
     book_id: bookId,
-    content: trimmed,
+    content,
   });
 
   if (error) return { error: error.message };
@@ -28,21 +33,18 @@ export async function addComment(bookId: string, content: string) {
   return { success: true };
 }
 
-export async function deleteComment(commentId: string) {
+export async function deleteCommentAction(formData: FormData) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Not authenticated." };
+  if (!user) return;
 
-  const { error } = await supabase
-    .from("comments")
-    .delete()
-    .eq("id", commentId);
+  const commentId = formData.get("commentId") as string;
+  if (!commentId) return;
 
-  if (error) return { error: error.message };
+  await supabase.from("comments").delete().eq("id", commentId);
 
   revalidatePath("/idea-pool");
   revalidatePath("/current-read");
-  return { success: true };
 }
