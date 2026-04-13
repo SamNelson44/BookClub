@@ -18,14 +18,19 @@ export default function LoginPage() {
     const email = (formData.get("email") as string).trim();
     const password = formData.get("password") as string;
 
-    const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    try {
+      const supabase = createClient();
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (authError) {
-      setError("Invalid email or password.");
+      if (authError) {
+        setError(authError.message);
+        setIsPending(false);
+      } else {
+        window.location.href = "/dashboard";
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unexpected error — please try again.");
       setIsPending(false);
-    } else {
-      window.location.href = "/dashboard";
     }
   }
 
