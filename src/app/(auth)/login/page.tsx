@@ -1,26 +1,32 @@
 "use client";
 
-import { useTransition, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { signIn } from "@/actions/auth";
+import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setIsPending(true);
+
     const formData = new FormData(e.currentTarget);
-    startTransition(async () => {
-      const result = await signIn(formData);
-      if (result?.error) {
-        setError(result.error);
-      } else {
-        window.location.href = "/dashboard";
-      }
-    });
+    const email = (formData.get("email") as string).trim();
+    const password = formData.get("password") as string;
+
+    const supabase = createClient();
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (authError) {
+      setError("Invalid email or password.");
+      setIsPending(false);
+    } else {
+      window.location.href = "/dashboard";
+    }
   }
 
   return (

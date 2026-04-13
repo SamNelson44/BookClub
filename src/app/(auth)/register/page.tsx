@@ -1,22 +1,48 @@
 "use client";
 
-import { useTransition, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { signUp } from "@/actions/auth";
+import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 
 export default function RegisterPage() {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setIsPending(true);
+
     const formData = new FormData(e.currentTarget);
-    startTransition(async () => {
-      const result = await signUp(formData);
-      if (result?.error) setError(result.error);
+    const name = (formData.get("name") as string).trim();
+    const email = (formData.get("email") as string).trim();
+    const password = formData.get("password") as string;
+
+    if (!name || !email || !password) {
+      setError("All fields are required.");
+      setIsPending(false);
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      setIsPending(false);
+      return;
+    }
+
+    const supabase = createClient();
+    const { error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name } },
     });
+
+    if (authError) {
+      setError(authError.message);
+      setIsPending(false);
+    } else {
+      window.location.href = "/dashboard";
+    }
   }
 
   return (
