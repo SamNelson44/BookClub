@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Class-based dark mode: applies when <html> has class="dark" */
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* ── Colors ── */
+  --color-parchment:   #FDFCF0;
+  --color-sage:        #4A5D4E;
+  --color-sage-50:     #EEF2EE;
+  --color-sage-100:    #D5E2D5;
+  --color-sage-200:    #AECAAF;
+  --color-sage-700:    #3A4A3D;
+  --color-coffee:      #3C2F2F;
+  --color-coffee-50:   #F5F0EF;
+  --color-coffee-200:  #C4A99A;
+
+  /* ── Fonts ── */
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-sans:  var(--font-inter), system-ui, sans-serif;
+
+  /* ── Border Radius ── */
+  --radius-cozy: 1rem;
+  --radius-3xl:  1.5rem;
+
+  /* ── Shadows ── */
+  --shadow-cozy:    0 2px 8px 0 rgba(60, 47, 47, 0.07);
+  --shadow-cozy-md: 0 4px 16px 0 rgba(60, 47, 47, 0.10);
+
+  /* ── Animations ── */
+  --animate-progress-fill: progressFill 0.6s ease-out forwards;
+  --animate-fade-in:       fadeIn 0.3s ease-out;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@keyframes progressFill {
+  0%   { width: 0%; }
+  100% { width: var(--progress-width, 0%); }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes fadeIn {
+  0%   { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Base Styles ── */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-parchment);
+  color: var(--color-coffee);
+  font-family: var(--font-sans);
+}
+
+.dark body {
+  background-color: #0C0A09;
+  color: #F5F5F4;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
 }
