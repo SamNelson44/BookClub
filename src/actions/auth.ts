@@ -49,7 +49,7 @@ export async function signIn(formData: FormData) {
     return { error: "Invalid email or password." };
   }
 
-  redirect("/dashboard");
+  return { success: true };
 }
 
 export async function signOut() {
