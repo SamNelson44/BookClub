@@ -11,23 +11,20 @@ export async function signUp(formData: FormData) {
   const password = formData.get("password") as string;
 
   if (!name || !email || !password) {
-    return { error: "All fields are required." };
+    redirect("/register?error=required");
   }
   if (password.length < 6) {
-    return { error: "Password must be at least 6 characters." };
+    redirect("/register?error=short");
   }
 
   const { error } = await supabase.auth.signUp({
     email,
     password,
-    options: {
-      data: { name },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/api/auth/callback`,
-    },
+    options: { data: { name } },
   });
 
   if (error) {
-    return { error: error.message };
+    redirect(`/register?error=${encodeURIComponent(error.message)}`);
   }
 
   redirect("/dashboard");
@@ -40,16 +37,16 @@ export async function signIn(formData: FormData) {
   const password = formData.get("password") as string;
 
   if (!email || !password) {
-    return { error: "Email and password are required." };
+    redirect("/login?error=required");
   }
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { error: "Invalid email or password." };
+    redirect("/login?error=invalid");
   }
 
-  return { success: true };
+  redirect("/dashboard");
 }
 
 export async function signOut() {

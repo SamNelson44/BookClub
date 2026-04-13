@@ -1,50 +1,30 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { Loader2 } from "lucide-react";
+import { signIn } from "@/actions/auth";
 
-export default function LoginPage() {
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const errorMessages: Record<string, string> = {
+  invalid:  "Invalid email or password.",
+  required: "Email and password are required.",
+};
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setIsPending(true);
-
-    const formData = new FormData(e.currentTarget);
-    const email = (formData.get("email") as string).trim();
-    const password = formData.get("password") as string;
-
-    try {
-      const supabase = createClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-
-      if (authError) {
-        setError(authError.message);
-        setIsPending(false);
-      } else {
-        window.location.href = "/dashboard";
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unexpected error — please try again.");
-      setIsPending(false);
-    }
-  }
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+  const errorMessage = error ? (errorMessages[error] ?? "Something went wrong.") : null;
 
   return (
     <>
       <h2 className="text-2xl font-serif text-coffee dark:text-stone-100 mb-6">Welcome back</h2>
 
-      {error && (
+      {errorMessage && (
         <div className="mb-4 px-4 py-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-700 dark:text-red-400">
-          {error}
+          {errorMessage}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form action={signIn} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-coffee dark:text-stone-200 mb-1.5" htmlFor="email">
             Email
@@ -77,11 +57,9 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          disabled={isPending}
-          className="w-full bg-sage text-parchment rounded-xl px-4 py-2.5 font-medium hover:bg-sage-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2 mt-2"
+          className="w-full bg-sage text-parchment rounded-xl px-4 py-2.5 font-medium hover:bg-sage-700 transition-colors flex items-center justify-center mt-2"
         >
-          {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-          {isPending ? "Signing in…" : "Sign in"}
+          Sign in
         </button>
       </form>
 

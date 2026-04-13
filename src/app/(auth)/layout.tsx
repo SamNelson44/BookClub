@@ -9,7 +9,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <BookOpen className="w-7 h-7 text-parchment" />
           </div>
           <h1 className="text-3xl font-serif text-coffee dark:text-stone-100">Tan Clan Book Club</h1>
-          <p className="text-coffee/60 dark:text-stone-400 mt-1 text-sm">A warm corner for readers</p>
+          <p className="text-coffee/60 dark:text-stone-400 mt-1 text-sm">Read some books</p>
         </div>
 
         <div className="bg-white dark:bg-stone-900 rounded-cozy shadow-cozy-md border border-transparent dark:border-stone-800 p-8">
