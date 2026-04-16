@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export async function addBook(
-  prevState: { error?: string; success?: boolean } | null,
+  _prevState: { error?: string; success?: boolean } | null,
   formData: FormData
 ) {
   const supabase = await createClient();
@@ -82,6 +82,44 @@ export async function selectBookFormAction(formData: FormData) {
   revalidatePath("/current-read");
   revalidatePath("/dashboard");
   redirect("/current-read");
+}
+
+export async function editBook(
+  _prevState: { error?: string; success?: boolean } | null,
+  formData: FormData
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated." };
+
+  const bookId = formData.get("bookId") as string;
+  const title = (formData.get("title") as string)?.trim();
+  const author = (formData.get("author") as string)?.trim();
+  const genre = (formData.get("genre") as string)?.trim() || null;
+  const pageCountRaw = formData.get("page_count") as string;
+  const description = (formData.get("description") as string)?.trim() || null;
+  const cover_url = (formData.get("cover_url") as string)?.trim() || null;
+
+  if (!title || !author || !pageCountRaw) {
+    return { error: "Title, author, and page count are required." };
+  }
+
+  const page_count = parseInt(pageCountRaw, 10);
+  if (isNaN(page_count) || page_count <= 0) {
+    return { error: "Page count must be a positive number." };
+  }
+
+  const { error } = await supabase
+    .from("books")
+    .update({ title, author, genre, page_count, description, cover_url })
+    .eq("id", bookId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/idea-pool");
+  return { success: true };
 }
 
 export async function deleteBook(bookId: string) {

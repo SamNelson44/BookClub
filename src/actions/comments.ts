@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export async function addCommentAction(
-  prevState: { error?: string; success?: boolean } | null,
+  _prevState: { error?: string; success?: boolean } | null,
   formData: FormData
 ) {
   const supabase = await createClient();

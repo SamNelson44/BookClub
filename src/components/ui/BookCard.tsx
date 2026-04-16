@@ -3,6 +3,7 @@ import { BookOpen, User, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { VotingPanel } from "@/components/features/VotingPanel";
 import { CommentThread } from "@/components/ui/CommentThread";
+import { EditBookForm } from "@/components/features/EditBookForm";
 import type { IdeaPoolBook, Comment, Profile } from "@/lib/types";
 
 interface BookCardProps {
@@ -66,11 +67,16 @@ export function BookCard({ book, currentUser, userHasVoted, comments }: BookCard
 
         {/* Footer */}
         <div className="pt-3 border-t border-sage-50 dark:border-stone-800 space-y-3">
-          <VotingPanel
-            bookId={book.id}
-            voteCount={book.vote_count}
-            userHasVoted={userHasVoted}
-          />
+          <div className="flex items-center justify-between">
+            <VotingPanel
+              bookId={book.id}
+              voteCount={book.vote_count}
+              userHasVoted={userHasVoted}
+            />
+            {(currentUser.id === book.suggested_by || currentUser.role === "host") && (
+              <EditBookForm book={book} />
+            )}
+          </div>
           <CommentThread
             bookId={book.id}
             comments={comments}
