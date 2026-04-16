@@ -38,20 +38,66 @@ export async function addBook(
     description,
     cover_url,
     suggested_by: user.id,
-    status: "idea",
+    status: "draft",
   });
 
   if (error) return { error: error.message };
 
-  revalidatePath("/idea-pool");
+  revalidatePath("/profile");
   return { success: true };
+}
+
+export async function publishBookAction(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const bookId = formData.get("bookId") as string;
+  await supabase
+    .from("books")
+    .update({ status: "idea" })
+    .eq("id", bookId)
+    .eq("suggested_by", user.id);
+
+  revalidatePath("/profile");
+  revalidatePath("/idea-pool");
+}
+
+export async function unpublishBookAction(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const bookId = formData.get("bookId") as string;
+  await supabase
+    .from("books")
+    .update({ status: "draft" })
+    .eq("id", bookId)
+    .eq("suggested_by", user.id);
+
+  revalidatePath("/profile");
+  revalidatePath("/idea-pool");
+}
+
+export async function deleteOwnBookAction(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const bookId = formData.get("bookId") as string;
+  await supabase
+    .from("books")
+    .delete()
+    .eq("id", bookId)
+    .eq("suggested_by", user.id)
+    .eq("status", "draft");
+
+  revalidatePath("/profile");
 }
 
 export async function selectBookFormAction(formData: FormData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
   const { data: profile } = await supabase
@@ -89,9 +135,7 @@ export async function editBook(
   formData: FormData
 ) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated." };
 
   const bookId = formData.get("bookId") as string;
@@ -118,15 +162,14 @@ export async function editBook(
 
   if (error) return { error: error.message };
 
+  revalidatePath("/profile");
   revalidatePath("/idea-pool");
   return { success: true };
 }
 
 export async function deleteBook(bookId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated." };
 
   const { data: profile } = await supabase

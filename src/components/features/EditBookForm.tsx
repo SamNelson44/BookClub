@@ -4,7 +4,7 @@ import { useState, useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
 import { Pencil, X, Loader2 } from "lucide-react";
 import { editBook } from "@/actions/books";
-import type { IdeaPoolBook } from "@/lib/types";
+import type { Book } from "@/lib/types";
 
 const genres = [
   "Fiction", "Non-Fiction", "Mystery", "Sci-Fi", "Fantasy",
@@ -28,7 +28,7 @@ function SaveButton() {
   );
 }
 
-export function EditBookForm({ book }: { book: IdeaPoolBook }) {
+export function EditBookForm({ book }: { book: Book }) {
   const [open, setOpen] = useState(false);
   const [state, formAction] = useActionState(editBook, null);
 

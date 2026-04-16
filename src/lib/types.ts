@@ -1,4 +1,4 @@
-export type BookStatus = "idea" | "current" | "completed";
+export type BookStatus = "draft" | "idea" | "current" | "completed";
 
 export interface Profile {
   id: string;

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Lightbulb } from "lucide-react";
+import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { BookCard } from "@/components/ui/BookCard";
-import { AddBookForm } from "@/components/features/AddBookForm";
 import { SelectionModal } from "@/components/features/SelectionModal";
 import type { IdeaPoolBook, Comment } from "@/lib/types";
 
@@ -57,7 +57,12 @@ export default async function IdeaPoolPage() {
           {profile.role === "host" && ideaBooks.length > 0 && (
             <SelectionModal books={ideaBooks} />
           )}
-          <AddBookForm />
+          <Link
+            href="/profile"
+            className="flex items-center gap-2 bg-sage text-parchment rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-sage-700 transition-colors shadow-cozy"
+          >
+            Add a book
+          </Link>
         </div>
       </div>
 
@@ -88,8 +93,14 @@ function EmptyIdeaPool() {
       </div>
       <h2 className="text-xl font-serif text-coffee dark:text-stone-100 mb-2">No ideas yet</h2>
       <p className="text-coffee/60 dark:text-stone-400 text-sm max-w-xs mx-auto mb-6">
-        Be the first to suggest a book for the group!
+        Add books to your list on your profile, then publish them here for the group to vote on.
       </p>
+      <Link
+        href="/profile"
+        className="inline-flex items-center gap-2 bg-sage text-parchment rounded-xl px-5 py-2.5 text-sm font-medium hover:bg-sage-700 transition-colors"
+      >
+        Go to My Profile
+      </Link>
     </div>
   );
 }
