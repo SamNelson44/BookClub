@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { BookOpen } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -51,8 +52,19 @@ export default async function DashboardPage() {
 function CurrentBookBanner({ book }: { book: Book }) {
   return (
     <div className="bg-white dark:bg-stone-900 rounded-cozy shadow-cozy border border-sage-100 dark:border-stone-800 p-6 flex items-start gap-5">
-      <div className="flex-shrink-0 w-16 h-24 bg-sage-50 dark:bg-stone-800 rounded-lg flex items-center justify-center overflow-hidden">
-        <BookOpen className="w-8 h-8 text-sage-200 dark:text-stone-600" />
+      <div className="relative flex-shrink-0 w-16 h-24 bg-sage-50 dark:bg-stone-800 rounded-lg overflow-hidden">
+        {book.cover_url ? (
+          <Image
+            src={book.cover_url}
+            alt={`Cover of ${book.title}`}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <BookOpen className="w-8 h-8 text-sage-200 dark:text-stone-600" />
+          </div>
+        )}
       </div>
       <div>
         <Badge variant="current" />
