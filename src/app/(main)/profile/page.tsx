@@ -31,26 +31,27 @@ export default async function ProfilePage() {
         <p className="text-coffee/60 dark:text-stone-400 mt-1">Update your name, picture, and book list.</p>
       </div>
 
-      {/* Profile form */}
-      <div className="bg-white dark:bg-stone-900 rounded-cozy shadow-cozy border border-sage-100 dark:border-stone-800 p-6 max-w-md">
-        <div className="flex items-center gap-2 mb-6 pb-5 border-b border-sage-50 dark:border-stone-800">
-          <span className="text-sm text-coffee/60 dark:text-stone-400">Role:</span>
-          <Badge variant={profile.role} />
-        </div>
-        <ProfileForm initialName={profile.name} initialAvatarUrl={profile.avatar_url} />
-      </div>
-
-      {/* My book list */}
-      <div>
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-xl font-serif text-coffee dark:text-stone-100">My Book List</h2>
-            <p className="text-sm text-coffee/60 dark:text-stone-400 mt-0.5">
-              Add books privately, then publish the ones you want the club to vote on.
-            </p>
+      <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-8 items-start">
+        {/* Profile form */}
+        <div className="bg-white dark:bg-stone-900 rounded-cozy shadow-cozy border border-sage-100 dark:border-stone-800 p-6">
+          <div className="flex items-center gap-2 mb-6 pb-5 border-b border-sage-50 dark:border-stone-800">
+            <span className="text-sm text-coffee/60 dark:text-stone-400">Role:</span>
+            <Badge variant={profile.role} />
           </div>
-          <AddBookForm />
+          <ProfileForm initialName={profile.name} initialAvatarUrl={profile.avatar_url} />
         </div>
+
+        {/* My book list */}
+        <div>
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <h2 className="text-xl font-serif text-coffee dark:text-stone-100">My Book List</h2>
+              <p className="text-sm text-coffee/60 dark:text-stone-400 mt-0.5">
+                Add books privately, then publish the ones you want the club to vote on.
+              </p>
+            </div>
+            <AddBookForm />
+          </div>
 
         {myBooks.length === 0 ? (
           <div className="bg-white dark:bg-stone-900 rounded-cozy shadow-cozy border border-sage-100 dark:border-stone-800 p-10 text-center">
@@ -141,6 +142,7 @@ export default async function ProfilePage() {
             ))}
           </ul>
         )}
+        </div>
       </div>
     </div>
   );
