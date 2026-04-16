@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-export async function updateProgressAction(formData: FormData) {
+export async function updateProgressAction(
+  _prevState: { page: number } | null | undefined,
+  formData: FormData
+) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -38,4 +41,5 @@ export async function updateProgressAction(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath("/current-read");
+  return { page: clampedPage };
 }

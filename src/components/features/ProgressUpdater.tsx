@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
@@ -28,53 +28,79 @@ interface ProgressUpdaterProps {
 
 export function ProgressUpdater({ bookId, pageCount, currentPage }: ProgressUpdaterProps) {
   const [page, setPage] = useState(currentPage);
+  const [showSixSeven, setShowSixSeven] = useState(false);
+  const [state, formAction] = useActionState(updateProgressAction, null);
+
+  useEffect(() => {
+    if (state?.page === 67) {
+      setShowSixSeven(true);
+      const timer = setTimeout(() => setShowSixSeven(false), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [state]);
 
   const isFinished = page >= pageCount;
   const percent = pageCount > 0 ? Math.round((page / pageCount) * 100) : 0;
 
   return (
-    <form action={updateProgressAction} className="space-y-4">
-      <input type="hidden" name="bookId" value={bookId} />
-
-      <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-coffee dark:text-stone-200" htmlFor="page-slider">
-          Your progress
-        </label>
-        <div className="flex items-center gap-2">
-          {isFinished && <Badge variant="finished" />}
-          <span className="text-sm text-coffee/60 dark:text-stone-400 tabular-nums">
-            {page} / {pageCount} pages
-          </span>
+    <>
+      {showSixSeven && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85">
+          <p
+            className="text-white font-serif text-center px-8 select-none"
+            style={{
+              fontSize: "clamp(3rem, 12vw, 8rem)",
+              animation: "blink 0.35s step-start infinite",
+            }}
+          >
+            SIX SEVEN!!!!!!
+          </p>
         </div>
-      </div>
+      )}
 
-      <input
-        id="page-slider"
-        type="range"
-        min={0}
-        max={pageCount}
-        value={page}
-        onChange={(e) => setPage(Number(e.target.value))}
-        className="w-full accent-sage cursor-pointer"
-      />
+      <form action={formAction} className="space-y-4">
+        <input type="hidden" name="bookId" value={bookId} />
 
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 flex-1">
-          <input
-            type="number"
-            name="page"
-            min={0}
-            max={pageCount}
-            value={page}
-            onChange={(e) => setPage(Math.min(pageCount, Math.max(0, Number(e.target.value))))}
-            className="w-24 border border-sage-200 dark:border-stone-600 rounded-xl px-3 py-2 text-sm text-coffee dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-sage/40 bg-white dark:bg-stone-800 tabular-nums"
-          />
-          <span className="text-sm text-coffee/60 dark:text-stone-400">
-            of {pageCount} pages ({percent}%)
-          </span>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium text-coffee dark:text-stone-200" htmlFor="page-slider">
+            Your progress
+          </label>
+          <div className="flex items-center gap-2">
+            {isFinished && <Badge variant="finished" />}
+            <span className="text-sm text-coffee/60 dark:text-stone-400 tabular-nums">
+              {page} / {pageCount} pages
+            </span>
+          </div>
         </div>
-        <SubmitButton />
-      </div>
-    </form>
+
+        <input
+          id="page-slider"
+          type="range"
+          min={0}
+          max={pageCount}
+          value={page}
+          onChange={(e) => setPage(Number(e.target.value))}
+          className="w-full accent-sage cursor-pointer"
+        />
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-1">
+            <input
+              type="number"
+              name="page"
+              min={0}
+              max={pageCount}
+              value={page}
+              onChange={(e) => setPage(Math.min(pageCount, Math.max(0, Number(e.target.value))))}
+              className="w-24 border border-sage-200 dark:border-stone-600 rounded-xl px-3 py-2 text-sm text-coffee dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-sage/40 bg-white dark:bg-stone-800 tabular-nums"
+            />
+            <span className="text-sm text-coffee/60 dark:text-stone-400">
+              of {pageCount} pages ({percent}%)
+            </span>
+          </div>
+          <SubmitButton />
+        </div>
+      </form>
+    </>
   );
 }
