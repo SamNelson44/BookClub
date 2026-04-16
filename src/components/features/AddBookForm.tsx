@@ -2,6 +2,7 @@
 
 import { useState, useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Plus, X, Loader2 } from "lucide-react";
 import { addBook } from "@/actions/books";
 
@@ -31,6 +32,16 @@ export function AddBookForm() {
   const [open, setOpen] = useState(false);
   const [state, formAction] = useActionState(addBook, null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (searchParams.get("addBook") === "1") {
+      setOpen(true);
+      router.replace("/profile");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (state?.success) setOpen(false);

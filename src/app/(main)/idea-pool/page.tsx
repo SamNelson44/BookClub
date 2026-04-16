@@ -58,7 +58,7 @@ export default async function IdeaPoolPage() {
             <SelectionModal books={ideaBooks} />
           )}
           <Link
-            href="/profile"
+            href="/profile?addBook=1"
             className="flex items-center gap-2 bg-sage text-parchment rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-sage-700 transition-colors shadow-cozy"
           >
             Add a book
