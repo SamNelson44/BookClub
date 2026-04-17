@@ -1,9 +1,10 @@
 import Image from "next/image";
-import { BookOpen, User, FileText } from "lucide-react";
+import { BookOpen, User, FileText, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { VotingPanel } from "@/components/features/VotingPanel";
 import { CommentThread } from "@/components/ui/CommentThread";
 import { EditBookForm } from "@/components/features/EditBookForm";
+import { setUpNextAction } from "@/actions/books";
 import type { IdeaPoolBook, Comment, Profile } from "@/lib/types";
 
 interface BookCardProps {
@@ -14,6 +15,8 @@ interface BookCardProps {
 }
 
 export function BookCard({ book, currentUser, userHasVoted, comments }: BookCardProps) {
+  const isHost = currentUser.role === "host";
+
   return (
     <article className="bg-white dark:bg-stone-900 rounded-cozy shadow-cozy border border-sage-100 dark:border-stone-800 overflow-hidden hover:shadow-cozy-md transition-shadow flex flex-col">
       {/* Cover */}
@@ -67,15 +70,29 @@ export function BookCard({ book, currentUser, userHasVoted, comments }: BookCard
 
         {/* Footer */}
         <div className="pt-3 border-t border-sage-50 dark:border-stone-800 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <VotingPanel
               bookId={book.id}
               voteCount={book.vote_count}
               userHasVoted={userHasVoted}
             />
-            {(currentUser.id === book.suggested_by || currentUser.role === "host") && (
-              <EditBookForm book={book} />
-            )}
+            <div className="flex items-center gap-3">
+              {isHost && (
+                <form action={setUpNextAction}>
+                  <input type="hidden" name="bookId" value={book.id} />
+                  <button
+                    type="submit"
+                    className="flex items-center gap-1 text-xs text-coffee/40 dark:text-stone-500 hover:text-sage dark:hover:text-sage-200 transition-colors"
+                  >
+                    <ChevronRight className="w-3 h-3" />
+                    Up next
+                  </button>
+                </form>
+              )}
+              {(currentUser.id === book.suggested_by || isHost) && (
+                <EditBookForm book={book} />
+              )}
+            </div>
           </div>
           <CommentThread
             bookId={book.id}

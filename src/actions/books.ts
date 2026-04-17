@@ -95,6 +95,60 @@ export async function deleteOwnBookAction(formData: FormData) {
   revalidatePath("/profile");
 }
 
+export async function setUpNextAction(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: profile } = await supabase
+    .from("profiles").select("role").eq("id", user.id).single();
+  if (profile?.role !== "host") return;
+
+  const bookId = formData.get("bookId") as string;
+
+  // Clear any existing 'next' book back to 'idea'
+  await supabase.from("books").update({ status: "idea" }).eq("status", "next");
+  // Set the chosen book as 'next'
+  await supabase.from("books").update({ status: "next" }).eq("id", bookId);
+
+  revalidatePath("/dashboard");
+  revalidatePath("/idea-pool");
+}
+
+export async function unsetUpNextAction(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: profile } = await supabase
+    .from("profiles").select("role").eq("id", user.id).single();
+  if (profile?.role !== "host") return;
+
+  const bookId = formData.get("bookId") as string;
+  await supabase.from("books").update({ status: "idea" }).eq("id", bookId);
+
+  revalidatePath("/dashboard");
+  revalidatePath("/idea-pool");
+}
+
+export async function startNextBookAction() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: profile } = await supabase
+    .from("profiles").select("role").eq("id", user.id).single();
+  if (profile?.role !== "host") return;
+
+  await supabase.from("books").update({ status: "completed" }).eq("status", "current");
+  await supabase.from("books").update({ status: "current" }).eq("status", "next");
+
+  revalidatePath("/dashboard");
+  revalidatePath("/current-read");
+  revalidatePath("/idea-pool");
+  redirect("/current-read");
+}
+
 export async function selectBookFormAction(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
