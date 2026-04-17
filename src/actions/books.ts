@@ -175,13 +175,13 @@ export async function selectBookFormAction(formData: FormData) {
     selectedBookId = ideaBooks[Math.floor(Math.random() * ideaBooks.length)].id;
   }
 
-  await supabase.from("books").update({ status: "completed" }).eq("status", "current");
-  await supabase.from("books").update({ status: "current" }).eq("id", selectedBookId);
+  // Clear any existing 'next' book back to 'idea', then queue the chosen book
+  await supabase.from("books").update({ status: "idea" }).eq("status", "next");
+  await supabase.from("books").update({ status: "next" }).eq("id", selectedBookId);
 
   revalidatePath("/idea-pool");
-  revalidatePath("/current-read");
   revalidatePath("/dashboard");
-  redirect("/current-read");
+  redirect("/dashboard");
 }
 
 export async function editBook(
