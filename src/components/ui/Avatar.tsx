@@ -4,10 +4,11 @@ import { getInitials } from "@/lib/utils";
 interface AvatarProps {
   name: string;
   avatarUrl?: string | null;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
 }
 
 const sizeMap = {
+  xs: { outer: "w-5 h-5", text: "text-[10px]" },
   sm: { outer: "w-7 h-7", text: "text-xs" },
   md: { outer: "w-9 h-9", text: "text-sm" },
   lg: { outer: "w-12 h-12", text: "text-base" },

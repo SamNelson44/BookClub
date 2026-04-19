@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart2, Lightbulb, BookOpen } from "lucide-react";
+import { BarChart2, Lightbulb, BookOpen, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: BarChart2 },
   { href: "/idea-pool", label: "Idea Pool", icon: Lightbulb },
   { href: "/current-read", label: "Current Read", icon: BookOpen },
+  { href: "/stats", label: "Stats", icon: TrendingUp },
 ];
 
 export function SidebarNav() {
