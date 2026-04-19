@@ -19,6 +19,8 @@ export interface Book {
   suggested_by: string | null;
   status: BookStatus;
   created_at: string;
+  goal_page: number | null;
+  goal_date: string | null;
 }
 
 export interface Progress {

@@ -221,6 +221,29 @@ export async function editBook(
   return { success: true };
 }
 
+export async function setReadingGoalAction(
+  _prevState: { error?: string; success?: boolean } | null | undefined,
+  formData: FormData
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated." };
+
+  const { data: profile } = await supabase
+    .from("profiles").select("role").eq("id", user.id).single();
+  if (profile?.role !== "host") return { error: "Only the host can set goals." };
+
+  const bookId = formData.get("bookId") as string;
+  const goalPageRaw = formData.get("goalPage") as string;
+  const goalDate = (formData.get("goalDate") as string) || null;
+  const goal_page = goalPageRaw ? parseInt(goalPageRaw, 10) : null;
+
+  await supabase.from("books").update({ goal_page, goal_date: goalDate }).eq("id", bookId);
+
+  revalidatePath("/current-read");
+  return { success: true };
+}
+
 export async function deleteBook(bookId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

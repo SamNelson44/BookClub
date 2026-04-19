@@ -6,6 +6,7 @@ import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/Badge";
 import { ProgressUpdater } from "@/components/features/ProgressUpdater";
+import { ReadingGoalCard } from "@/components/features/ReadingGoalCard";
 import { CommentThread } from "@/components/ui/CommentThread";
 import type { Book, Progress, Comment } from "@/lib/types";
 
@@ -88,6 +89,16 @@ export default async function CurrentReadPage() {
           </div>
         </div>
       </div>
+
+      {/* Weekly goal */}
+      <ReadingGoalCard
+        bookId={currentBook.id}
+        pageCount={currentBook.page_count}
+        goalPage={currentBook.goal_page}
+        goalDate={currentBook.goal_date}
+        currentPage={progress?.current_page ?? 0}
+        isHost={profile.role === "host"}
+      />
 
       {/* Progress updater */}
       <div className="bg-white dark:bg-stone-900 rounded-cozy shadow-cozy border border-sage-100 dark:border-stone-800 p-6">
